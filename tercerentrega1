@@ -60,3 +60,419 @@ namespace tercerentrega1
 
     
 }
+
+
+//CAMBIO DE ARCHIVOOOOO
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics.Contracts;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml.Linq;
+
+namespace tercerentrega1
+{
+    public partial class Form1 : Form
+    {
+        private AccesoDatos accesoDatos;
+        int contador = 0;
+        public Form1()
+        {
+            InitializeComponent();
+            accesoDatos = new AccesoDatos();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            CargarCombo();
+            CargarCombo2();
+            CargarListbox();
+        }
+
+        private void CargarListbox()
+        {
+            dgSocios.Rows.Clear();
+            string consultaSql = "Select s.nro_socio, s.nombre, s.apellido, td.tipo_documento, s.documento, tc.tipo_contacto, s.contacto, s.calle, s.direccion from socios s JOIN tipo_documentos td on s.id_tipo_documento = td.id_tipo_documento JOIN tipo_contactos tc on s.id_tipo_contacto = tc.id_tipo_contacto";
+            DataTable datatable = accesoDatos.ConsultarBaseDeDatos(consultaSql);
+            foreach (DataRow fila in datatable.Rows)
+            {
+                dgSocios.Rows.Add(fila[0], fila[1], fila[2], fila[3], fila[4], fila[5], fila[6], fila[7], fila[8]);
+            }
+        }
+
+       
+
+        private void CargarCombo()
+        {
+            DataTable datatable = accesoDatos.ConsultarCombos("tipo_documentos");
+            cboTipodocumento.DataSource = datatable;
+            cboTipodocumento.ValueMember = datatable.Columns[0].ColumnName;
+            cboTipodocumento.DisplayMember = datatable.Columns[1].ColumnName;
+        }
+
+        private void CargarCombo2()
+        {
+            DataTable datatable = accesoDatos.ConsultarCombos("tipo_contactos");
+            cboTipocontacto.DataSource = datatable;
+            cboTipocontacto.ValueMember = datatable.Columns[0].ColumnName;
+            cboTipocontacto.DisplayMember = datatable.Columns[1].ColumnName;
+        }
+
+        private void btnBorrar_Click(object sender, EventArgs e)
+        {
+            if (dgSocios.SelectedRows.Count > 0)
+            {
+                DataGridViewRow selectedRow = dgSocios.SelectedRows[0];
+                string i = selectedRow.Cells["clmNombre"].Value.ToString();
+                int rowIndex = dgSocios.CurrentRow.Index + 1;
+                string consultaSql = "DELETE from socios where nombre = '" + i + "'";
+                DataTable datatable = accesoDatos.ConsultarBaseDeDatos(consultaSql);
+                int index = dgSocios.SelectedRows[0].Index;
+                dgSocios.Rows.Remove(selectedRow);
+            }
+        }
+        private void btnNuevo_Click(object sender, EventArgs e)
+        {
+            btnAceptar.Enabled = true;
+            txtNombre.Enabled = true;
+            txtApellido.Enabled = true;
+            cboTipocontacto.Enabled = true;
+            cboTipodocumento.Enabled = true;
+            txtContacto.Enabled = true;
+            txtDocumento.Enabled = true;
+            txtCalle.Enabled = true;
+            txtAltura.Enabled = true;
+            txtNumerodesocio.Enabled = true;
+            btnEditar.Enabled = false;
+        }
+
+        private void button3_MouseClick(object sender, MouseEventArgs e)
+        {
+
+        }
+
+
+
+        public void btnAceptar_Click(object sender, EventArgs e)
+        {
+            if (contador == 0)
+            {
+                int tipo_documento = 0;
+                switch (cboTipodocumento.Text)
+                {
+                    case "DNI":
+                        tipo_documento = 1;
+                        break;
+                    case "Pasaporte":
+                        tipo_documento = 2;
+                        break;
+                    case "Cuil":
+                        tipo_documento = 3;
+                        break;
+                    case "Cedula":
+                        tipo_documento = 4;
+                        break;
+
+                }
+                int tipo_contacto = 0;
+                switch (cboTipocontacto.Text)
+                {
+                    case "Telefono Fijo":
+                        tipo_contacto = 1;
+                        break;
+                    case "Telefono Movil":
+                        tipo_contacto = 2;
+                        break;
+                    case "Correo Electronico":
+                        tipo_contacto = 3;
+                        break;
+
+                }
+                
+                string nombre = txtNombre.Text;
+                string apellido = txtApellido.Text;
+                int documento = Convert.ToInt32(txtDocumento.Text);
+                string contacto = txtContacto.Text;
+                string calle = txtCalle.Text;
+                int direccion = Convert.ToInt32(txtAltura.Text);
+                string tc = cboTipocontacto.Text;
+                string td = cboTipodocumento.Text;
+
+                string consultaSql = "Insert into socios (nombre, apellido, id_tipo_documento, documento, id_tipo_contacto, contacto, calle, direccion) values ('" + nombre + "', '" + apellido + "', " + tipo_documento + ", " + documento + ", " + tipo_contacto + ", '" + contacto + "', " + calle + ", " + direccion + ")";
+                DataTable datatable = accesoDatos.ConsultarBaseDeDatos(consultaSql);
+                CargarListbox();
+
+                btnAceptar.Enabled = false;
+                txtNombre.Enabled = false;
+                txtApellido.Enabled = false;
+                cboTipocontacto.Enabled = false;
+                cboTipodocumento.Enabled = false;
+                txtContacto.Enabled = false;
+                txtDocumento.Enabled = false;
+                txtCalle.Enabled = false;
+                txtAltura.Enabled = false;
+                txtNumerodesocio.Enabled = false;
+
+                txtNombre.Text = string.Empty;
+                txtCalle.Text = string.Empty;
+                txtAltura.Text = string.Empty;
+                cboTipocontacto.Text = string.Empty;
+                cboTipodocumento.Text = string.Empty;
+                txtApellido.Text = string.Empty;
+                txtNumerodesocio.Text = string.Empty;
+                txtContacto.Text = string.Empty;
+                txtDocumento.Text = string.Empty;
+                btnEditar.Enabled = true;
+            }
+            if (contador == 1)
+            {
+                int tipo_documento = 0;
+                switch (cboTipodocumento.Text)
+                {
+                    case "DNI":
+                        tipo_documento = 1;
+                        break;
+                    case "Pasaporte":
+                        tipo_documento = 2;
+                        break;
+                    case "Cuil":
+                        tipo_documento = 3;
+                        break;
+                    case "Cedula":
+                        tipo_documento = 4;
+                        break;
+
+                }
+                int tipo_contacto = 0;
+                switch (cboTipocontacto.Text)
+                {
+                    case "Telefono Fijo":
+                        tipo_contacto = 1;
+                        break;
+                    case "Telefono Movil":
+                        tipo_contacto = 2;
+                        break;
+                    case "Correo Electronico":
+                        tipo_contacto = 3;
+                        break;
+
+                }
+                string nombre = txtNombre.Text;
+                string apellido = txtApellido.Text;
+                int documento = Convert.ToInt32(txtDocumento.Text);
+                string contacto = txtContacto.Text;
+                int numero_socio = Convert.ToInt32(txtNumerodesocio.Text);
+                string calle = txtCalle.Text;
+                int direccion = Convert.ToInt32(txtAltura.Text);
+                DataGridViewRow selectedRow = dgSocios.SelectedRows[0];
+                string i = selectedRow.Cells["clmNombre"].Value.ToString();
+                string consultaSql = "update socios set nombre = '" + nombre + "', apellido='" + apellido + "', id_tipo_documento=" + tipo_documento + ", documento=" + documento + ", id_tipo_contacto=" + tipo_contacto + ", contacto='" + contacto + "', calle=" + calle + ", direccion=" + direccion + " where nombre = '"+i+"'";
+                DataTable datatable = accesoDatos.ConsultarBaseDeDatos(consultaSql);
+                selectedRow.Cells["clmNombre"].Value = nombre;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["clmApellido"].Value = apellido;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["Documento"].Value = documento;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["Contacto"].Value = contacto;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["Calle"].Value = calle;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["Direccion"].Value = direccion;
+                string tc = cboTipocontacto.Text;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["Tipo_contacto"].Value = tc;
+                string td = cboTipodocumento.Text;
+                selectedRow = dgSocios.SelectedRows[0];
+                selectedRow.Cells["tipo_documento"].Value = td;
+
+                btnAceptar.Enabled = false;
+                txtNombre.Enabled = false;
+                txtApellido.Enabled = false;
+                cboTipocontacto.Enabled = false;
+                cboTipodocumento.Enabled = false;
+                txtContacto.Enabled = false;
+                txtDocumento.Enabled = false;
+                txtCalle.Enabled = false;
+                txtAltura.Enabled = false;
+                txtNumerodesocio.Enabled = false;
+
+                txtNombre.Text = string.Empty;
+                txtCalle.Text = string.Empty;
+                txtAltura.Text = string.Empty;
+                cboTipocontacto.Text = string.Empty;
+                cboTipodocumento.Text = string.Empty;
+                txtApellido.Text = string.Empty;
+                txtNumerodesocio.Text = string.Empty;
+                txtContacto.Text = string.Empty;
+                txtDocumento.Text = string.Empty;
+                btnEditar.Enabled = true;
+                contador = 0;
+            }
+            
+
+        }
+
+
+
+
+        private void btnEditar_Click(object sender, EventArgs e)
+        {
+            if (dgSocios.SelectedRows.Count > 0)
+            {
+                contador = 1;
+                DataGridViewRow selectedRow = dgSocios.SelectedRows[0];
+                string nombre = selectedRow.Cells["clmNombre"].Value.ToString();
+                txtNombre.Text = nombre;
+                string apellido = selectedRow.Cells["clmApellido"].Value.ToString();
+                txtApellido.Text = apellido;
+                string tipo_doc = selectedRow.Cells["tipo_documento"].Value.ToString();
+                cboTipodocumento.Text = tipo_doc;
+                string doc = selectedRow.Cells["Documento"].Value.ToString();
+                txtDocumento.Text = doc;
+                string tipo_con = selectedRow.Cells["Tipo_contacto"].Value.ToString();
+                cboTipocontacto.Text = tipo_con;
+                string con = selectedRow.Cells["Contacto"].Value.ToString();
+                txtContacto.Text = con;
+                string direc = selectedRow.Cells["Direccion"].Value.ToString();
+                txtAltura.Text = direc;
+                string calle = selectedRow.Cells["Calle"].Value.ToString();
+                txtCalle.Text = calle;
+                string nro_socio = selectedRow.Cells["nroSocio"].Value.ToString();
+                txtNumerodesocio.Text = nro_socio;
+                btnAceptar.Enabled = true;
+                txtNombre.Enabled = true;
+                txtApellido.Enabled = true;
+                cboTipocontacto.Enabled = true;
+                cboTipodocumento.Enabled = true;
+                txtContacto.Enabled = true;
+                txtDocumento.Enabled = true;
+                txtCalle.Enabled = true;
+                txtAltura.Enabled = true;
+                txtNumerodesocio.Enabled = true;
+                btnEditar.Enabled = false;
+
+            }
+            
+
+        }
+
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btnCerrar_Click(object sender, EventArgs e)
+        {
+            dgSocios.Visible = false;
+            this.Close();
+        }
+
+    }
+}
+
+//CAMBIO DE ARCHIVOOOO
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace tercerentrega1
+{
+    public class Socio
+    {
+        private string nombre;
+
+        public string Nombre
+        {
+            get { return nombre; }
+            set { nombre = value; }
+        }
+
+        private string apellido;
+
+        public string Apellido
+        {
+            get { return apellido; }
+            set { apellido = value; }
+        }
+
+        private int tipo_documento;
+        public int Tipo_documento
+        {
+            get { return tipo_documento; }
+            set { tipo_documento = value; }
+        }
+
+        private int documento;
+        public int Documento
+        {
+            get { return documento; }
+            set { documento = value; }
+        }
+
+        private int tipo_contacto;
+        public int Tipo_contacto
+        {
+            get { return tipo_contacto; }
+            set { tipo_contacto = value; }
+        }
+
+        private string contacto;
+        public string Contacto
+        {
+            get { return contacto; }
+            set { contacto = value; }
+        }
+
+        private int numero_socio;
+        public int Numero_socio
+        {
+            get { return numero_socio; }
+            set { numero_socio = value; }
+        }
+
+        private string calle;
+        public string Calle
+        {
+            get { return calle; }
+            set { calle = value; }
+        }
+
+        private int direccion;
+        public int Direccion
+        {
+            get { return direccion; }
+            set { direccion = value; }
+        }
+
+        public Socio(string nombre, string apellido, int tipo_documento, int documento, int tipo_contacto, string contacto, int numero_socio, string calle, int direccion)
+        {
+            this.nombre = nombre;
+            this.apellido = apellido;
+            this.tipo_documento = tipo_documento;
+            this.documento = documento;
+            this.tipo_contacto = tipo_contacto;
+            this.contacto = contacto;
+            this.numero_socio = numero_socio;
+            this.calle = calle;
+            this.direccion = direccion;
+        }
+
+        public override string ToString()
+        {
+            return nombre + " / " + apellido + " / " + tipo_documento + " / " + documento + " / " + tipo_contacto + " / " + contacto + " / " + numero_socio + " / " + calle + " / " + direccion;
+        }
+    }
+}
+
